@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define _GNU_SOURCE
+#define BUFFER_SIZE 1024
 
 FILE *fptr;
 
@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
 
     while (argv[i] != NULL)
     {
+        printf(argv[i]);
         switch ((argv[i])[0])
         {
         case 'p':
@@ -31,14 +32,14 @@ int main(int argc, char *argv[])
             delete (argv[i]);
             break;
         case 'c':
+            clear();
             break;
         case 'a':
+            all();
             break;
         default:
             break;
         }
-
-        break;
     }
     fclose(fptr);
 }
@@ -54,7 +55,7 @@ void get(char *argv)
 {
     char *input_str = strdup(argv);
     char *id_str = truncString((input_str), 2);
-    char *key = atoi(id_str);
+    int key = atoi(id_str);
 
     char *line = NULL;
     size_t len = 0;
@@ -73,7 +74,7 @@ void delete(char *argv)
 {
     char *input_str = strdup(argv);
     char *id_str = truncString((input_str), 2);
-    char *key = atoi(id_str);
+    int key = atoi(id_str);
 
     char *line = NULL;
     size_t len = 0;
@@ -83,18 +84,39 @@ void delete(char *argv)
         char *id = strsep(&str, ",");
         if (atoi(id) == key)
         {
-            strcat(line, "World!");
-            printf(line);
+            fseek(fptr, 0, SEEK_CUR);
+            // int len = ftell(fptr);
+            char str[] = " ";
+            fwrite(str, 1, sizeof(str), fptr);
         }
     }
 }
 
 void clear()
 {
+    fptr = fopen("database.txt", "w");
 }
 
 void all()
 {
+    char buffer[BUFFER_SIZE];
+
+    fptr = fopen("database.txt", "r");
+
+    if (fptr == NULL)
+    {
+        printf("Error opening file\n");
+        return 1;
+    }
+
+    while (fgets(buffer, BUFFER_SIZE, fptr) != NULL)
+    {
+        printf("%s", buffer);
+    }
+
+    fclose(fptr);
+
+    return 0;
 }
 
 char *truncString(char *str, int pos)
